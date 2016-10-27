@@ -1,3 +1,5 @@
+- patt: ["\\.[^/]+/.*", "\\.[^/]+", "LICENSE", "README\\.\\w+"]
+  exclude: true
 - patt: [tests/.*]
   exclude: true
 - patt: [package.js]
