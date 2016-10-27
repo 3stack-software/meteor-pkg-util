@@ -3,12 +3,13 @@ import os
 import re
 
 import click
+import pkg_resources
 import yaml
 
 
 @click.command()
 @click.argument('package_dir', type=click.Path())
-@click.option('--config', type=click.File(), envvar='MPKGUTIL_CONF', default=lambda: os.path.join(os.path.dirname(__file__), 'default.yaml'))
+@click.option('--config', type=click.File(), envvar='MPKGUTIL_CONF', default=lambda: pkg_resources.resource_filename(__name__, 'default.yaml'))
 @click.option('--landmark', default='//MPKGUTIL')
 def cli(package_dir, config, landmark):
     # click.echo('package_dir={0!r}'.format(package_dir))

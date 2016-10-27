@@ -3,13 +3,13 @@ from setuptools import setup
 setup(
     name='meteor_pkg_util',
     version='0.1',
-    py_modules=['meteor_pkg_util'],
+    packages=['meteor_pkg_util'],
     install_requires=[
         'Click',
         'PyYAML'
     ],
     package_data={
-        '': ['default.yaml']
+        'meteor_pkg_util': ['default.yaml']
     },
     entry_points='''
         [console_scripts]
