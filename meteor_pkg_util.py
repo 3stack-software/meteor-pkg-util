@@ -131,7 +131,7 @@ def make_js_statement(matched_patterns, matching, group):
         cs.append('server')
     fmt = FMT_REGULAR
     if group.get('asset', False):
-        fmt = FMT_ASSET
+        fmt = FMT_ASSET_V1_2
     return fmt.format(
         patterns="\n    // ".join(matched_patterns),
         files=",\n    ".join(json.dumps(m) for m in matching),
