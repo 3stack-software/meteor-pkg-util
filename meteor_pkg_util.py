@@ -1,10 +1,8 @@
-#!/usr/bin/env python
+import json
+import os
+import re
 
 import click
-import os
-import sys
-import json
-import re
 import yaml
 
 
@@ -20,7 +18,6 @@ def cli(package_dir, config, landmark):
     # click.echo('landmark={0!r}'.format(landmark))
 
     write_package_js(package_dir, conf, landmark)
-
 
 
 def write_package_js(package_dir, groups, landmark_comment):
@@ -56,32 +53,39 @@ def read_outside_landmarks(text, landmark_comment):
 
 
 def get_matching_files(package_dir, groups):
-    files = list_files(package_dir)
+    filenames = list_files(package_dir)
     for group in groups:
-        matched_patterns, matching = get_matching(group['patt'], files)
-        if matching:
-            for f in matching:
-                files.remove(f)
+        matched_patterns, matched_filenames, filenames = get_all_matching(group['patt'], filenames)
+        if matched_filenames:
             if group.get('exclude', False):
                 continue
-            yield matched_patterns, matching, group
+            yield matched_patterns, matched_filenames, group
 
-    if files:
-        raise RuntimeError("The following files weren't matched: {0!r}".format(files))
+    if filenames:
+        raise RuntimeError("The following files weren't matched: {0!r}".format(filenames))
 
 
-def get_matching(patterns, files):
+def get_all_matching(patterns, filenames):
     matched_patterns = []
-    results = []
-    for patt in patterns:
-        matched = False
-        for f in files:
-            if re.match(patt + r'\Z(?ms)', f):
-                if not matched:
-                    matched = True
-                    matched_patterns.append(patt)
-                results.append(f)
-    return matched_patterns, results
+    matched_files = []
+    remainder = filenames
+    for pattern in patterns:
+        matched, remainder = get_matching(pattern, remainder)
+        if matched:
+            matched_patterns.append(pattern)
+            matched_files += matched
+    return matched_patterns, matched_files, remainder
+
+
+def get_matching(pattern, filenames):
+    matched = []
+    remainder = []
+    for filename in filenames:
+        if re.match(pattern + r'\Z(?ms)', filename):
+            matched.append(filename)
+        else:
+            remainder.append(filename)
+    return matched, remainder
 
 
 def pth_cmp(a, b):
@@ -106,7 +110,6 @@ def list_files(folder):
         return sorted(paths, cmp=pth_cmp)
     finally:
         os.chdir(cwd)
-
 
 
 FMT_REGULAR = """  api.addFiles([
@@ -137,6 +140,3 @@ def make_js_statement(matched_patterns, matching, group):
         files=",\n    ".join(json.dumps(m) for m in matching),
         cs=", ".join(json.dumps(t) for t in cs)
     )
-
-if __name__ == '__main__':
-    cli()
